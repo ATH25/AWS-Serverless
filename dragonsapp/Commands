@@ -1,0 +1,42 @@
+
+Set JAVA_HOME in the console
+>export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+
+Set ROLE_ARN_READWRIT and ROLE_ARN_READ environment variables. 
+>export ROLE_ARN_READWRITE=`aws iam get-role --role-name dragons-readwrite-lambda-role  --query 'Role.Arn' --output text`
+
+>export ROLE_ARN_READ=`aws iam get-role --role-name dragons-read-lambda-role  --query 'Role.Arn' --output text`
+
+Load the updated environment variables by executing the command:
+>source ~/.bashrc
+
+Got to /home/ec2-user/environment/dragonsapp/java-dragons-lambda/listDragons folder where the build.gradle file is and execute 
+>gradle build
+
+Now you can see the zip file created in the /build/distributions/ folder
+
+
+Create Lambda Function - ListDragons
+aws lambda create-function --function-name ListDragons --runtime java11 --role $ROLE_ARN_READ --handler com.mycompany.app.ListDragons::handleRequest --publish --zip-file fileb://build/distributions/listDragons.zip --timeout 90 --memory-size 448 
+aws lambda create-function --function-name ListDragons --runtime java11 --role arn:aws:iam::139595783523:role/dragons-read-lambda-role --handler com.mycompany.app.ListDragons::handleRequest --publish --zip-file fileb://build/distributions/listDragons.zip --timeout 90 --memory-size 448 
+
+
+Invoke the function with an empty payload.
+>aws lambda invoke --function-name ListDragons output.txt
+
+ROLE_ARN_READ role arn:
+arn:aws:iam::139595783523:role/dragons-read-lambda-role
+
+
+
+
+aws s3 sync s3://aju-dragons-app s3://aju-dragons-app --source-region us-east-2 --region us-east-1
+
+Enable CloudWatch Logs for your API Gateway stage using the AWS CLI:
+aws apigateway update-stage --rest-api-id 2neurtgv86 --stage-name prod --patch-operations op=add,path=/accessLogSettings/destinationArn,value=arn:aws:logs:us-east-1:139595783523:log-group:/aws/api-gateway/2neurtgv86
+
+Copy all the contents of the webapp2 folder to Amazon Simple Storage Service (Amazon S3).
+aws s3 cp ./webapp2 s3://$MYBUCKET2/dragonsapp/ --recursive --acl public-read
+
+Run the following AWS Command Line Interface (AWS CLI) command to get the URL for the app (index.html)
+echo "URL: https://$MYBUCKET2.s3.amazonaws.com/dragonsapp/index.html"
