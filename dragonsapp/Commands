@@ -40,3 +40,45 @@ aws s3 cp ./webapp2 s3://$MYBUCKET2/dragonsapp/ --recursive --acl public-read
 
 Run the following AWS Command Line Interface (AWS CLI) command to get the URL for the app (index.html)
 echo "URL: https://$MYBUCKET2.s3.amazonaws.com/dragonsapp/index.html"
+
+Create the function, and upload the code package by using the create-function command.
+
+aws lambda create-function --function-name ListDragons2 \
+--runtime java11 \
+--role $ROLE_ARN_READ \
+--handler com.mycompany.app.ListDragons::handleRequest \
+--publish \
+--timeout 90 \
+--memory-size 448 \
+--zip-file fileb://build/distributions/listDragons.zip
+
+aws lambda invoke --function-name ListDragons2 output.txt
+
+Create and invoke the AddDragon function with the sample payload:
+
+aws lambda create-function --function-name AddDragon2 \
+--runtime java11 \
+--role $ROLE_ARN_READWRITE \
+--handler com.mycompany.app.AddDragon::handleRequest \
+--timeout 90 \
+--memory-size 448 \
+--publish \
+--zip-file fileb://build/distributions/addDragon.zip
+
+aws lambda invoke --function-name AddDragon2 --payload fileb://newDragonPayload.json output.txt ; cat output.txt
+
+
+Create and invoke the ValidateDragon function with the sample payloads.
+
+aws lambda create-function --function-name ValidateDragon2 \
+--runtime java11 \
+--role $ROLE_ARN_READWRITE \
+--handler com.mycompany.app.ValidateDragon::handleRequest \
+--timeout 90 \
+--memory-size 448 \
+--publish \
+--zip-file fileb://build/distributions/validateDragon.zip
+
+aws lambda invoke --function-name ValidateDragon2 --payload fileb://newDragonPayload.json output.txt ; cat output.txt
+aws lambda invoke --function-name ValidateDragon2 --payload fileb://duplicateDragonPayload.json output.txt ; cat output.txt
+
